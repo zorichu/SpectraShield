@@ -84,16 +84,11 @@ h1, h2, h3 {
     color: #42dfc1;
 }
 
-.section {
-    background: #0d151d;
-    border: 1px solid #1c2a34;
-    border-radius: 14px;
-    padding: 20px;
-    margin-top: 20px;
-}
 </style>
 """, unsafe_allow_html=True)
 
+
+# HEADER
 
 st.markdown(
     '<div class="brand">🛡️ SpectraShield</div>',
@@ -110,6 +105,9 @@ st.markdown(
     unsafe_allow_html=True
 )
 
+
+# NETWORK FLOW BANNER
+
 st.markdown(
     """
     <div class="network">
@@ -119,12 +117,16 @@ st.markdown(
         </strong>
         ━━━━━ &nbsp;&nbsp; SpectraShield Sensor
         <br>
-        <small>Passive replica of observable traffic — no return path into the network.</small>
+        <small>
+        Passive replica of observable traffic — no return path into the network.
+        </small>
     </div>
     """,
     unsafe_allow_html=True
 )
 
+
+# TRAFFIC INPUT
 
 traffic = pd.read_csv("data/traffic.csv")
 
@@ -140,6 +142,8 @@ record_count = st.sidebar.slider(
 run = st.sidebar.button("▶ Start Monitoring")
 
 
+# MONITORING
+
 if run:
 
     selected = traffic.head(record_count)
@@ -147,12 +151,15 @@ if run:
 
     total = len(results)
     threats = len(results[results["threat"] != "Normal"])
-    high = len(results[results["severity"] == "High"])
     critical = len(results[results["severity"] == "Critical"])
 
     packets_per_second = int(
         results["packets_per_second"].mean()
     )
+
+    score = abs(
+        results["detection_score"]
+    ).mean()
 
     st.markdown("### Monitoring Overview")
 
@@ -166,7 +173,7 @@ if run:
                 <div class="metric-value metric-accent">
                     {packets_per_second}
                 </div>
-                <div class="metric-title">simulated one-way traffic</div>
+                <div class="metric-title">Simulated traffic</div>
             </div>
             """,
             unsafe_allow_html=True
@@ -178,7 +185,7 @@ if run:
             <div class="metric-card">
                 <div class="metric-title">Flows monitored</div>
                 <div class="metric-value">{total}</div>
-                <div class="metric-title">current session</div>
+                <div class="metric-title">Current session</div>
             </div>
             """,
             unsafe_allow_html=True
@@ -189,16 +196,16 @@ if run:
             f"""
             <div class="metric-card">
                 <div class="metric-title">Threats detected</div>
-                <div class="metric-value metric-danger">{threats}</div>
-                <div class="metric-title">flagged traffic records</div>
+                <div class="metric-value metric-danger">
+                    {threats}
+                </div>
+                <div class="metric-title">Flagged records</div>
             </div>
             """,
             unsafe_allow_html=True
         )
 
     with col4:
-        score = abs(results["detection_score"]).mean()
-
         st.markdown(
             f"""
             <div class="metric-card">
@@ -206,69 +213,4 @@ if run:
                 <div class="metric-value metric-accent">
                     {score:.2f}
                 </div>
-                <div class="metric-title">prototype model score</div>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
-
-    st.markdown("### 📡 Live Flow Stream")
-
-    display_columns = [
-        "timestamp",
-        "source_ip",
-        "destination_ip",
-        "protocol",
-        "bytes",
-        "threat",
-        "severity",
-        "detection_score"
-    ]
-
-    st.dataframe(
-        results[display_columns],
-        use_container_width=True,
-        hide_index=True
-    )
-
-
-    st.markdown("### 🚨 Evidence-Based Alerts")
-
-    alerts = results[results["threat"] != "Normal"]
-
-    if len(alerts) > 0:
-
-        st.dataframe(
-            alerts[
-                [
-                    "source_ip",
-                    "destination_ip",
-                    "threat",
-                    "severity",
-                    "detection_score",
-                    "reason"
-                ]
-            ],
-            use_container_width=True,
-            hide_index=True
-        )
-
-    else:
-
-        st.success("No suspicious activity detected.")
-
-
-else:
-
-    st.markdown("### Ready for Monitoring")
-
-    st.info(
-        "Start monitoring from the sidebar to analyze the simulated "
-        "one-way traffic stream."
-    )
-
-
-st.caption(
-    "SpectraShield Prototype • Passive / Read-Only Monitoring"
-)
+                <div class="metric-title">Prototype model score</div>
